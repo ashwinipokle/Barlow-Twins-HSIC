@@ -1,6 +1,7 @@
 from PIL import Image
 from torchvision import transforms
 from torchvision.datasets import CIFAR10
+import argparse
 
 # for cifar10 (32x32)
 class CifarPairTransform:
@@ -97,3 +98,31 @@ class StlPairTransform:
             return y1, y2
         else:
             return self.transform(x)
+
+def get_transform(dataset, train_transform=True):
+    if dataset == 'cifar10':
+        if train_transform is True:
+            transform = transforms.Compose([
+                transforms.RandomResizedCrop(32),
+                transforms.RandomHorizontalFlip(p=0.5),
+                transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
+                transforms.RandomGrayscale(p=0.2),
+                transforms.ToTensor(),
+                transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010])])
+        else:
+            transform = transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010])])
+    else:
+        raise ValueError(f"Unknown dataset {dataset}")
+    return transform
+
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
