@@ -159,7 +159,8 @@ class NetWrapper(nn.Module):
         return hidden
 
     def forward(self, x, return_projection = True):
-        representation = self.get_representation(x).squeeze()
+        B = x.shape[0]
+        representation = self.get_representation(x).view(B, -1)
 
         if not return_projection:
             return representation
