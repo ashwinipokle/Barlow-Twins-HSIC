@@ -136,7 +136,6 @@ if __name__=='__main__':
     test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=True)
     memory_loader = DataLoader(memory_data, batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=True)
 
-    
     if args.use_default_enc:
         encoder = models.resnet50(pretrained=args.use_pretrained_enc)
         hidden_layer = 'avgpool'
@@ -146,8 +145,11 @@ if __name__=='__main__':
             if name == 'conv1':
                 module = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
             if dataset == 'cifar10':
-                if not isinstance(module, nn.Linear) and not isinstance(module, nn.MaxPool2d):
+                #if not isinstance(module, nn.Linear) and not isinstance(module, nn.MaxPool2d):
+                if not isinstance(module, nn.MaxPool2d) and not isinstance(module, nn.Linear):
                     enc_layers.append(module)
+                else:
+                    print("skipping MaxPool2d... or Linear")
             elif dataset == 'tiny_imagenet' or dataset == 'stl10':
                 if not isinstance(module, nn.Linear):
                     enc_layers.append(module)
@@ -173,7 +175,7 @@ if __name__=='__main__':
     optimizer = optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-6)
     # training loop
     results = {'train_loss': [], 'test_acc@1': [], 'test_acc@5': []}
-    save_name_pre = '{}_{}_{}_{}'.format(args.feature_dim, args.proj_hidden_dim, batch_size, dataset)
+    save_name_pre = 'enc_default{}_{}_{}_{}_{}'.format(args.use_default_enc, args.feature_dim, args.proj_hidden_dim, batch_size, dataset)
 
     if not os.path.exists('results'):
         os.mkdir('results')
